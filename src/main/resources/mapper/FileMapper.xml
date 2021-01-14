@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zero.system.mapper.FileMapper">
+    <resultMap id="BaseResultMap" type="com.zero.system.model.Files">
+        <id column="fid" jdbcType="INTEGER" property="fid" />
+        <result column="fname" jdbcType="VARCHAR" property="fname" />
+
+        <result column="ftype" jdbcType="VARCHAR" property="ftype" />
+        <result column="fsize" jdbcType="VARCHAR" property="fsize" />
+        <result column="url" jdbcType="INTEGER" property="url" />
+
+        <result column="bid" jdbcType="INTEGER" property="bid" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        fid,fname,ftype,fsize,url
+    </sql>
+
+    <select id="queryList" resultMap="BaseResultMap" >
+        <!-- 根据条件查询 所有信息 -->
+        select * from files,file_bagfile
+        <where>
+            <if test="fname!=null"> and fname LIKE concat("%",#{fname},"%") </if>
+            <if test="ftype!=null"> and ftype LIKE concat("%",#{ftype},"%") </if>
+            <if test="fsize!=null"> and fsize LIKE concat("%",#{fsize},"%") </if>
+            <if test="url!=null"> and url LIKE concat("%",#{url},"%") </if>
+            <if test="bid!=null"> and bid = #{bid}</if>
+            and files.fid = file_bagfile.fid
+        </where>
+        limit #{startIndex},#{pagesize}
+    </select>
+
+    <select id="queryCount" resultType="int" >
+        select count(*) from files,file_bagfile
+        <where>
+            <if test="fname!=null"> and fname LIKE concat("%",#{fname},"%") </if>
+            <if test="ftype!=null"> and ftype LIKE concat("%",#{ftype},"%") </if>
+            <if test="fsize!=null"> and fsize LIKE concat("%",#{fsize},"%") </if>
+            <if test="url!=null"> and url LIKE concat("%",#{url},"%") </if>
+            <if test="bid!=null"> and file_bagfile.bid =#{bid} </if>
+            and files.fid = file_bagfile.fid
+        </where>
+    </select>
+
+    <insert id="insertFile" parameterType="Files" >
+        insert into files(fname,ftype,fsize,url)
+        values (#{fname},#{ftype},#{fsize},#{url})
+    </insert>
+    <insert id="insertFile_BagFile" parameterType="Files">
+        insert into file_bagfile(fid,bid)
+        values (#{fid},#{bid})
+    </insert>
+
+    <select id="selectById" parameterType="int" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from files where fid = #{fid}
+    </select>
+
+    <delete id="delByFileIds" parameterType="java.util.List">
+        delete from files where fid in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="file_bagfile" parameterType="java.util.List">
+        delete from file_bagfile where fid in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <delete id="delFileByBid" parameterType="int">
+        delete from files where fid in (select fid from file_bagfile where bid=  #{id})
+    </delete>
+    <!--<update id="editByAdmin" parameterType="Admin">-->
+        <!--update admin-->
+        <!--set username = #{username},email = #{email},phone = #{phone},rid = #{rid},status = #{status}-->
+        <!--<if test="password != null"> ,password = #{password}</if>-->
+        <!--where id = #{id}-->
+    <!--</update>-->
+
+    <!--<select id="selectByName" parameterType="String" resultType="Files">-->
+        <!--select <include refid="Base_Column_List" /> from files where fname = #{fname}-->
+    <!--</select>-->
+    <select id="selectByName" parameterType="String" resultType="Files">
+        select <include refid="Base_Column_List" /> from files where fname = #{fname}
+    </select>
+</mapper>

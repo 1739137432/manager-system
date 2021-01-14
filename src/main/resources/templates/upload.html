@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>单文件上传</title>
+    <link rel="stylesheet" href="../static/layuiadmin/layui/css/layui.css" th:href="@{/layuiadmin/layui/css/layui.css}" >
+</head>
+<body>
+<h2 style="margin: auto">单文件上传</h2>
+<br>
+<br><br>
+<label class="layui-form-label">上传文件</label>
+<form method="POST" enctype="multipart/form-data" action="/upload" style="text-align: center">
+    文件：<input type="file" name="file"/>
+    <br><br><br>
+    <button type="submit" class="layui-btn" lay-filter="addrole">上传</button>
+</form>
+
+<hr/>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员列表</title>
+    <link rel="stylesheet" th:href="@{/layuiadmin/layui/css/layui.css}" media="all"
+          href="../../../static/layuiadmin/layui/css/layui.css">
+    <link rel="stylesheet" th:href="@{/layuiadmin/style/admin.css}" media="all"
+          href="../../../static/layuiadmin/style/admin.css">
+    <link rel="stylesheet" th:href="@{/font-awesome-4.7.0/css/font-awesome.min.css}"
+          href="../../../static/font-awesome-4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+            <div class="layui-form-item">
+                <div class="layui-inline" style="width: 250px">
+                    <label class="layui-form-label">文件名</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="fname" name="fname" placeholder="请输入" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline" style="width: 250px">
+                    <label class="layui-form-label">文件类型</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="ftype" name="creattime" placeholder="请输入" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline" style="width: 250px">
+                    <label class="layui-form-label">文件大小</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="fsize" name="fsize" placeholder="请输入" autocomplete="off"
+                               class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline" style="width: 250px">
+                    <label class="layui-form-label">文件路径</label>
+                    <div class="layui-input-block">
+                        <input type="text" id="url" name="url" placeholder="请输入" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn layuiadmin-btn-admin" data-type="search_table">
+                        <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-card-body">
+            <div style="padding-bottom: 10px;">
+                <button class="layui-btn layuiadmin-btn-admin" data-type="add">上传文件</button>
+            </div>
+
+            <table id="table" lay-filter="table"></table>
+
+
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/layuiadmin/layui/layui.js}" src="../../../static/layuiadmin/layui/layui.js"></script>
+
+<script type="text/html" id="table_admin">
+    <!--<a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="fa fa-pencil"></i>编辑</a>-->
+    <!--<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="fa fa-trash-o"></i>删除</a>-->
+</script>
+
+<script>
+
+    layui.use(['jquery', 'layer', 'table'], function () {
+        var table = layui.table;
+        var layer = layui.layer;
+        var $ = layui.jquery;
+        //执行一个 table 实例
+        //参考资料：https://www.cnblogs.com/youcong/p/11342366.html
+        table.render({
+            elem: '#table',
+            height: 450,
+            url: '/manager/FileList?bid=' + [[${bid}]], //数据接口
+            title: '文件列表',
+            page: true,
+            limit: 5,
+            limits: [5, 10, 15, 20],
+            cols: [
+                [ //表头
+                    {type: 'checkbox', fixed: 'left'},
+                    {field: 'fid', title: '文件编号', width: 150},
+                    {field: 'fname', title: '文件名', width: 200},
+                    {field: 'url', title: '文件路径', width: 250},
+                    {field: 'ftype', title: '文件类型', width: 113},
+                    {field: 'fsize', title: '文件大小', width: 113},
+                    {fixed: 'right', title: '操作', width: 240, align: 'center', toolbar: '#table_admin'}
+                ]
+            ],
+            //用于搜索结果重载
+            id: 'sreload'
+        });
+        //加载
+        var active = {
+            search_table: function () {
+                var fname = $('#fname');
+                var ftype = $('#ftype');
+                var fsize = $('#fsize');
+                var url = $("#url");
+                //执行重载
+                table.reload('sreload', {
+                    //一定要加不然乱码
+                    method: 'post'
+                    , page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                    , where: {
+                        //表示传到后台的参数
+                        fname: fname.val(),
+                        ftype: ftype.val(),
+                        fsize: fsize.val(),
+                        url: url.val()
+                    }
+                });
+            },
+            //添加函数
+            add: function () {
+                layer.open({
+                    type: 2,
+                    title: '上传文件',
+                    skin: 'layui-layer-demo', //加上边框
+                    area: ['500px', '450px'], //宽高
+                    content: '/upload?bid=' + [[${bid}]]
+                });
+            }
+        }
+        //搜索监听
+        $('.layui-btn.layuiadmin-btn-admin').on('click', function () {
+            var type = $(this).data('type');
+            active[type] ? active[type].call(this) : '';
+        });
+    });
+
+
+</script>
+</body>
+</html>

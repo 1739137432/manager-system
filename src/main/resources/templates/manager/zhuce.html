@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>后台登录</title>
+
+    <!--  layui  -->
+    <link rel="stylesheet" th:href="@{/layuiadmin/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/layuiadmin/layui/css/modules/layer/default/layer.css}">
+
+    <!--&lt;!&ndash;背景配置&ndash;&gt;-->
+    <link rel="stylesheet" th:href="@{/mystatic/particles/css/style.css}">
+    <link rel="stylesheet" th:href="@{/mystatic/login/css/login.css}">
+    <script src="../../static/bootstrap/jquery.js" th:src="@{/bootstrap/jquery.js}"></script>
+    <script src="../../static/bootstrap/bootstrap.min.js" th:src="@{/bootstrap/bootstrap.min.js}"></script>
+<script>
+    var run = false;
+    var arr = new Array();
+
+    function floatTurn(float) {
+        float[0] = (Math.random() - 0.5) * 4;
+        float[1] = 0;
+    }
+
+    function add() {
+        var float = [-1, 0];
+        floatTurn(float);
+        var snowflake = document.createElement("div");
+        snowflake.classList.add('snowflake');
+        snowflake.style.width = "15.4px";
+        snowflake.style.height = "17.2px";
+        snowflake.style.left = Math.random() * window.screen.width + "px";
+        arr.push(
+            setInterval(function () {
+                snowflake.style.top = snowflake.offsetTop + 4 + "px";
+                snowflake.style.left = snowflake.offsetLeft + float[0] + "px";
+                float[1]++;
+                if (float[1] >= 50) {
+                    floatTurn(float);
+                }
+                if (snowflake.offsetTop > window.screen.height) {
+                    document.body.removeChild(snowflake);
+                    snowflake.remove();
+                    snowflake.style.display = "none";
+                }
+            }, 60)
+        );
+        document.body.appendChild(snowflake);
+    }
+    function start() {
+        if (run) {
+            return;
+        }
+        run = true;
+        loop();
+    }
+
+    function loop() {
+        if (!run) {
+            return;
+        }
+        var r = Math.random() * 10;
+        while (r-- >= 0) {
+            add();
+        }
+        setTimeout(loop, Math.random() * 2500);
+    }
+    window.onload = start;//不要括号
+</script>
+</head>
+<body onload="start();">
+<!--背景渲染-->
+<div id="particles-js"></div>
+
+<div class="box">
+    <form action="" class="layui-form">
+        <h1>注册界面</h1>
+        <input type="text" name="username" autocomplete="off" placeholder="用户名" lay-verify="required"/>
+        <input type="password" name="password" placeholder="密码" lay-verify="required"/>
+        <input type="password" name="password1" placeholder="确认密码" lay-verify="required"/>
+        <input type="tel" name="phone" autocomplete="off" placeholder="电话号码" lay-verify="required"/>
+        <input type="email" name="email"  autocomplete="off" placeholder="邮箱" lay-verify="required"/>
+        <a class="submit" lay-submit lay-filter="login">注册</a>
+        <br>
+
+    </form>
+    <a class="zhuce" href="/manager/login">已有帐号</a>
+</div>
+
+<!--layui-->
+<script th:src="@{/layuiadmin/layui/layui.all.js}"></script>
+<!--&lt;!&ndash;背景配置&ndash;&gt;-->
+<script th:src="@{/mystatic/particles/js/particles.js}"></script>
+<!--<script th:src="@{/mystatic/particles/js/app.js}"></script>-->
+
+<script>
+    layui.use(['form','layer','jquery'], function(){
+        var form = layui.form;
+        var $ = layui.jquery;
+        form.on('submit(login)',function (data) {
+            var pw=document.getElementsByName("password").value;
+            var pw1=document.getElementsByName("password1").value;
+            if(pw==pw1) {
+                $.ajax({
+                    url: '/manager/zhuce',
+                    data: data.field,
+                    dataType: 'json',
+                    type: 'post',
+                    success: function (data) {
+                        if (data.success) {
+                            layer.msg(data.message, {time: 700}, function () {
+                                window.location.href = "/manager/login";
+                            })
+                        } else {
+                            layer.msg(data.message, {time: 700}, function () {
+
+                            })
+                        }
+                    }
+                })
+            }else {
+                layer.msg("密码不一致!!!");
+            }
+            return false;
+        })
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zero.system.mapper.BagFileMapper">
+    <resultMap id="BaseResultMap" type="com.zero.system.model.Bag_file">
+        <id column="bid" jdbcType="INTEGER" property="bid" />
+        <result column="bname" jdbcType="VARCHAR" property="bname" />
+        <result column="createtime" jdbcType="VARCHAR" property="createtime" />
+        <result column="endtime" jdbcType="VARCHAR" property="endtime" />
+        <result column="aid" jdbcType="INTEGER" property="aid" />
+
+        <result column="adminName" jdbcType="VARCHAR" property="adminName" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        bid,bname,creattime,endtime,aid
+    </sql>
+
+    <select id="queryList" resultMap="BaseResultMap" >
+        <!-- 根据条件查询 所有信息 -->
+        select bag_file.*,
+        admin.username as adminName
+        from admin,Bag_file
+        <where>
+            <if test="bname!=null"> and bag_file.bname LIKE concat("%",#{bname},"%") </if>
+            <if test="adminName!=null"> and username LIKE concat("%", #{adminName},"%") </if>
+            <if test="createtime!=null"> and bag_file.createtime LIKE concat("%", #{createtime},"%") </if>
+            <if test="endtime!=null"> and bag_file.endtime LIKE concat("%", #{endtime} ,"%")</if>
+            and admin.id = bag_file.aid
+        </where>
+        limit #{startIndex},#{pagesize}
+    </select>
+
+    <select id="queryCount" resultType="int" >
+        select count(*) from admin,bag_file
+        <where>
+            <if test="bname!=null"> and bag_file.bname LIKE concat("%",#{bname},"%") </if>
+            <if test="adminName!=null"> and username LIKE concat("%", #{adminName},"%") </if>
+            <if test="createtime!=null"> and bag_file.createtime LIKE concat("%", #{createtime},"%") </if>
+            <if test="endtime!=null"> and bag_file.endtime LIKE concat("%", #{endtime} ,"%")</if>
+            and admin.id = bag_file.aid
+        </where>
+    </select>
+
+    <insert id="insertBagFile" parameterType="Bag_file">
+        insert into bag_file(bname,creattime,endtime,aid)
+        values (#{bname},#{creattime},#{endtime},#{aid})
+    </insert>
+
+    <select id="selectById" parameterType="int" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from bag_file where bid = #{bid}
+    </select>
+
+    <delete id="delByBagFileIds" parameterType="java.util.List">
+        delete from bag_file where bid in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="delByFile_BagFile" parameterType="java.util.List">
+        delete from file_bagfile where bid in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+
+    <update id="editByBagFile" parameterType="Bag_file">
+        update bag_file
+        set bname = #{bname},endtime = #{endtime}
+        where bid = #{bid}
+    </update>
+
+    <!--<select id="selectByName" parameterType="String" resultType="Admin">-->
+        <!--select <include refid="Base_Column_List" /> from admin where username = #{username}-->
+    <!--</select>-->
+
+    <select id="queryFileId" parameterType="java.util.List" resultType="java.util.List">
+        select fid from file_bagfile where bid in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </select>
+</mapper>
