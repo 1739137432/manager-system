@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员列表</title>
+    <link rel="stylesheet" th:href="@{/layuiadmin/layui/css/layui.css}" media="all" href="../../../static/layuiadmin/layui/css/layui.css">
+    <link rel="stylesheet" th:href="@{/layuiadmin/style/admin.css}" media="all" href="../../../static/layuiadmin/style/admin.css">
+    <link rel="stylesheet" th:href="@{/font-awesome-4.7.0/css/font-awesome.min.css}" href="../../../static/font-awesome-4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-form layui-card-header layuiadmin-card-header-auto">
+                <div class="layui-form-item">
+                    <div class="layui-inline" style="width: 250px">
+                        <label class="layui-form-label">文件夹名</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="bname" name="bname" placeholder="请输入" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="width: 250px">
+                        <label class="layui-form-label">创建日期</label>
+                        <div class="layui-input-block">
+                            <input type="date" id="creattime" name="creattime" placeholder="请输入" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="width: 250px">
+                        <label class="layui-form-label">结束日期</label>
+                        <div class="layui-input-block">
+                            <input type="date" id="endtime" name="endtime" placeholder="请输入" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="width: 250px">
+                        <label class="layui-form-label">创建者</label>
+                        <div class="layui-input-block">
+                            <input type="text" id="adminName" name="adminName" placeholder="请输入" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn layuiadmin-btn-admin" data-type="search_table">
+                            <i class="layui-icon layui-icon-search layuiadmin-button-btn"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-card-body">
+                <div style="padding-bottom: 10px;">
+                    <button class="layui-btn layuiadmin-btn-admin" data-type="batchdel">删除</button>
+                    <button class="layui-btn layuiadmin-btn-admin" data-type="add">添加</button>
+                </div>
+
+                <table id="table" lay-filter="table"></table>
+
+
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/layuiadmin/layui/layui.js}" src="../../../static/layuiadmin/layui/layui.js"></script>
+
+    <script type="text/html" id="table_admin">
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="in"><i class="fa fa-pencil"></i>进入</a>
+        <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit"><i class="fa fa-pencil"></i>编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="fa fa-trash-o"></i>删除</a>
+    </script>
+
+    <script>
+
+        layui.use(['jquery','layer', 'table'], function(){
+            var table = layui.table;
+            var layer = layui.layer;
+            var $ = layui.jquery;
+
+
+            //执行一个 table 实例
+            //参考资料：https://www.cnblogs.com/youcong/p/11342366.html
+            table.render({
+                elem: '#table',
+                height: 450,
+                url: '/manager/FileBagList', //数据接口
+                title: '文件列表',
+                page: true,
+                limit: 5,
+                limits: [5,10,15,20],
+                cols: [
+                    [ //表头
+                    {type: 'checkbox', fixed: 'left'},
+                    {field: 'bid', title: '文件编号', width:150},
+                    {field: 'bname', title: '文件名', width:150},
+                    {field: 'creattimeStr', title: '开始日期', width: 250},
+                    {field: 'endtimeStr', title: '结束日期', width:250},
+                    {field: 'adminName', title: '创建人', width:200},
+                    {fixed: 'right',title:'操作', width: 240, align:'center', toolbar: '#table_admin'}
+                    ]
+                ],
+                //用于搜索结果重载
+                id: 'sreload'
+            });
+            //加载
+            var active = {
+                search_table: function(){
+                    var bname = $('#bname');
+                    var creattime = $('#creattime');
+                    var endtime = $('#endtime');
+                    var adminName = $("#adminName");
+                    //执行重载
+                    table.reload('sreload', {
+                        //一定要加不然乱码
+                        method: 'post'
+                        ,page: {
+                            curr: 1 //重新从第 1 页开始
+                        }
+                        ,where: {
+                            //表示传到后台的参数
+                            bname: bname.val(),
+                            creattime: creattime.val(),
+                            endtime: endtime.val(),
+                            adminName : adminName.val()
+                        }
+                    });
+                },
+                //添加函数
+                add: function() {
+                    layer.open({
+                        type: 2,
+                        title: '添加文件夹',
+                        skin: 'layui-layer-demo', //加上边框
+                        area: ['500px', '450px'], //宽高
+                        content: '/manager/addFileBag'
+                    });
+                },
+                //删除多行
+                batchdel:function () {
+                    var checkAll = table.checkStatus('sreload');
+                    if(checkAll.data.length == 0){
+                        layer.msg('请选择数据进行删除');
+                    }else{
+                        layer.confirm('真的删除行么', function(){
+                            var jsonObj = {};
+                            for(var i=0;i<checkAll.data.length;i++){
+                                jsonObj["ids["+i+"]"] = checkAll.data[i].bid;
+                            }
+                            $.ajax({
+                                url:'/manager/bagfilein',
+                                data:jsonObj,
+                                dataType:'json',
+                                type:'post',
+                                success:function (data) {
+                                    if (data.success){
+                                        window.location.reload();
+                                    }else{
+                                        layer.msg(data.message);
+                                    }
+                                }
+                            })
+                        });
+                    }
+
+                }
+            }
+            //搜索监听
+            $('.layui-btn.layuiadmin-btn-admin').on('click', function(){
+                var type = $(this).data('type');
+                active[type] ? active[type].call(this) : '';
+            });
+
+
+            //判断是编辑还是删除这一行
+            table.on('tool(table)', function(obj){ //注：tool 是工具条事件名，table 是 table 原始容器的属性 lay-filter="对应的值"
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值
+                if(layEvent === 'edit'){
+                    edit(data);
+                } else if(layEvent === 'del'){
+                    layer.confirm('真的删除行么', function(index){
+                        del(data,obj,index);
+                    });
+                }else if(layEvent == 'in'){
+                    input(data);
+                }
+            });
+            //编辑函数
+            function edit(data) {
+                layer.open({
+                    type: 2,
+                    title: '修改文件夹信息',
+                    skin: 'layui-layer-demo', //加上边框
+                    area: ['500px', '450px'], //宽高
+                    method: 'post',
+                    content: '/manager/addFileBag?type=edit&id='+data.bid
+                });
+            }
+            //后边两个参数仅仅是因为要执行动态删除dom
+            function del(data,obj,index){
+                var jsonObj = {};
+                jsonObj["ids[0]"] = data.bid;
+                $.ajax({
+                    url:'/manager/delBagFile',
+                    data:jsonObj,
+                    dataType:'json',
+                    type:'post',
+                    success:function (data) {
+                        if (data.success){
+                            obj.del(); //删除对应行（tr）的DOM结构
+                            layer.close(index);
+                        }else{
+                            layer.msg(data.message);
+                        }
+                    }
+                })
+            }
+            function input(data) {
+                layer.open({
+                    type: 2,
+                    title: '进入该文件夹',
+                    skin: 'layui-layer-demo', //加上边框
+                    area: ['1200px', '600px'], //宽高
+                    method: 'post',
+                    content: '/manager/bagfilein?bid='+data.bid
+                });
+            }
+
+        });
+
+
+    </script>
+</body>
+</html>
